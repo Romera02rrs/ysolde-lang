@@ -1,10 +1,10 @@
-// components/DrawerMenu.js
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "../components/ui/drawer";
-import { Button } from "../components/ui/button";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../components/ui/dropdown-menu";
+// components/HamburguerNavBar.js
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "./ui/drawer";
+import { Button } from "./ui/button";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu";
 import UserIcon from "./icons/UserIcon";
 
-export default function DrawerMenu({
+export default function HamburguerNavBar({
   isHandleHamburguerOpen,
   setIsHandleHamburguerOpen,
   isDarkMode,

@@ -1,8 +1,7 @@
-// This is the root layout component for your Next.js app.
-// Learn more: https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts#root-layout-required
 import { Inter } from 'next/font/google'
 import { cn } from '../../c/lib/utils'
 import './globals.css'
+import Head from 'next/head'
 
 const fontHeading = Inter({
   subsets: ['latin'],
@@ -19,6 +18,9 @@ const fontBody = Inter({
 export default function Layout({ children }) {
   return (
     <html lang="en">
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <body 
         className={cn(
           'antialiased',

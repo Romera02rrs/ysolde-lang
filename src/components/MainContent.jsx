@@ -1,14 +1,119 @@
 // components/MainContent.js
 import { Button } from "../components/ui/button";
 import MicIcon from "./icons/MicIcon";
+import { useState, useRef } from "react";
 
 export default function MainContent({
   isDarkMode,
-  isRecording,
-  handleMicClick,
   handleConversationPanelToggle,
   handleModalToggle,
 }) {
+  const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  const handleAudio = async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Your browser does not support audio recording.");
+      return;
+    }
+
+    if (!recording) {
+      // Iniciar la grabación
+      console.log("grabando");
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: "audio/webm",
+        }); // Configurar el tipo MIME deseado
+        mediaRecorderRef.current = mediaRecorder;
+
+        mediaRecorder.ondataavailable = (event) => {
+          audioChunksRef.current.push(event.data);
+        };
+
+        mediaRecorder.start();
+        setRecording(true);
+      } catch (error) {
+        console.error("Error accessing microphone:", error);
+      }
+    } else {
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/webm",
+        }); // Tipo MIME configurado según el tipo de MediaRecorder
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        // Reproducir el audio grabado
+        const audio = new Audio(audioUrl);
+        audio.play();
+
+        const formData = new FormData();
+        formData.append("file", audioBlob, "audio.webm");
+
+        /*
+          *** Enviar el audio al backend para transcripción y respuesta  ***
+        */
+        // const transcription = await fetch("/api/speech-to-text", {
+        //   method: "POST",
+        //   body: formData, // Enviar el FormData en lugar de JSON
+        // })
+        //   .then((res) => res.json())
+        //   .then((data) => data.transcription);
+
+        // console.log('Transcription: ', transcription);
+
+        /*
+          *** Enviar la transcripción al backend para la respuesta  ***
+        */
+        // const chatResponse = await fetch("/api/chat", {
+        //   method: "POST",
+        //   body: JSON.stringify({ prompt: transcription }),
+        // })
+        //   .then((res) => res.json())
+        //   .then((data) => data.response);
+
+        // console.log("Chat: ", chatResponse);
+
+        /*
+          *** Enviar la respuesta al backend para obtener el audio ***
+        */
+        const audioResponse = await fetch("/api/text-to-speech", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: 'Hello! How can I assist you today? Would you like to practice speaking in English?' }),
+        }).then((res) => res.json());
+
+        // playAudio(audioResponse.audioContent);
+
+        // Limpiar los chunks para la próxima grabación
+        audioChunksRef.current = [];
+      };
+      // Detener la grabación
+      console.log("deteniendo");
+      // El micro no se detiene
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream
+        .getTracks()
+        .forEach((track) => track.stop());
+      setRecording(false);
+    }
+  };
+
+  const playAudio = (audioContent) => {
+    const audioBlob = new Blob([new Uint8Array(audioContent)], {
+      type: "audio/mp3",
+    });
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    audio.play();
+  };
+
   return (
     <main
       className={`flex flex-col items-center justify-center flex-1 p-4 ${
@@ -25,20 +130,20 @@ export default function MainContent({
         <div
           className={`absolute w-[280px] h-[280px] rounded-full ${
             isDarkMode ? "bg-gray-700" : "bg-[#0077b6]"
-          } ${isRecording ? "animate-pulse" : ""}`}
+          } ${recording ? "animate-pulse" : ""}`}
         />
         <button
           className={`relative z-10 w-[240px] h-[240px] rounded-full ${
             isDarkMode ? "bg-gray-800" : "bg-white"
           } flex items-center justify-center transition-transform ${
-            isRecording ? "animate-wiggle" : "hover:scale-105"
+            recording ? "animate-wiggle" : "hover:scale-105"
           } shadow-md`}
-          onClick={handleMicClick}
+          onClick={handleAudio}
         >
           <MicIcon
             className={`w-16 h-16 ${
               isDarkMode ? "text-gray-300" : "text-[#0077b6]"
-            } ${isRecording ? "animate-shake" : ""}`}
+            } ${recording ? "animate-shake" : ""}`}
           />
         </button>
       </div>

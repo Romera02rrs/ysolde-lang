@@ -10,9 +10,9 @@ export default function DrawerConversation({
   return (
     <Drawer
       open={isConversationPanelOpen}
-      onOpenChange={setIsConversationPanelOpen}
+      onOpenChange={(isOpen) => setIsConversationPanelOpen(isOpen)}
       position="right"
-      className="w-[300px]"
+      className="w-full max-w-[300px]"
     >
       <DrawerContent className="p-5">
         <DrawerHeader>

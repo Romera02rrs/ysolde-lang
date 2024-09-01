@@ -4,7 +4,7 @@ import { useState } from "react";
 import Header from "../components/Header";
 import MainContent from "../components/MainContent";
 import Dialogs from "../components/Dialogs";
-import DrawerMenu from "../components/DrawerMenu";
+import HamburguerNavBar from "../components/HamburguerNavBar";
 import DrawerConversation from "../components/DrawerConversation";
 
 const conversations = [
@@ -57,8 +57,6 @@ export default function Component() {
     isDarkMode,
   };
 
-  console.log(languague);
-
   return (
     <div
       className={`flex flex-col min-h-screen font-sans ${
@@ -70,7 +68,7 @@ export default function Component() {
         handleHamburguerOpen={handleHamburguerOpen}
         {...navBarProps}
       />
-      <DrawerMenu
+      <HamburguerNavBar
         isHandleHamburguerOpen={isHandleHamburguerOpen}
         setIsHandleHamburguerOpen={setIsHandleHamburguerOpen}
         isDarkMode={isDarkMode}
