@@ -44,42 +44,37 @@ export default function MainContent({
       mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/webm",
-        }); // Tipo MIME configurado según el tipo de MediaRecorder
-        const audioUrl = URL.createObjectURL(audioBlob);
-
-        // Reproducir el audio grabado
-        const audio = new Audio(audioUrl);
-        audio.play();
+        });
 
         const formData = new FormData();
         formData.append("file", audioBlob, "audio.webm");
 
         /*
-         *** Enviar el audio al backend para transcripción y respuesta  ***
+         *** Get te client voice and send it to whipser: Return a string  ***
          */
-        // const transcription = await fetch("/api/speech-to-text", {
-        //   method: "POST",
-        //   body: formData, // Enviar el FormData en lugar de JSON
-        // })
-        //   .then((res) => res.json())
-        //   .then((data) => data.transcription);
+        const transcription = await fetch("/api/speech-to-text", {
+          method: "POST",
+          body: formData, // Enviar el FormData en lugar de JSON
+        })
+          .then((res) => res.json())
+          .then((data) => data.transcription);
 
         // console.log('Transcription: ', transcription);
 
         /*
-         *** Enviar la transcripción al backend para la respuesta  ***
+         *** Get the user string and make a response  ***
          */
-        // const chatResponse = await fetch("/api/chat", {
-        //   method: "POST",
-        //   body: JSON.stringify({ prompt: transcription }),
-        // })
-        //   .then((res) => res.json())
-        //   .then((data) => data.response);
+        const chatResponse = await fetch("/api/chat", {
+          method: "POST",
+          body: JSON.stringify({ prompt: transcription }),
+        })
+          .then((res) => res.json())
+          .then((data) => data.response);
 
-        // console.log("Chat: ", chatResponse);
+        console.log("Chat: ", chatResponse);
 
         /*
-         *** Enviar la respuesta al backend para obtener el audio ***
+         *** Get the string response and speak with AI ***
          */
         const audioResponse = await fetch("/api/text-to-speech", {
           method: "POST",
@@ -87,7 +82,7 @@ export default function MainContent({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            text: "Hello! How can I assist you today? Would you like to practice speaking in English?",
+            text: chatResponse,
           }),
         })
           .then((res) => res.json())
