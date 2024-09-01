@@ -55,8 +55,8 @@ export default function MainContent({
         formData.append("file", audioBlob, "audio.webm");
 
         /*
-          *** Enviar el audio al backend para transcripción y respuesta  ***
-        */
+         *** Enviar el audio al backend para transcripción y respuesta  ***
+         */
         // const transcription = await fetch("/api/speech-to-text", {
         //   method: "POST",
         //   body: formData, // Enviar el FormData en lugar de JSON
@@ -67,8 +67,8 @@ export default function MainContent({
         // console.log('Transcription: ', transcription);
 
         /*
-          *** Enviar la transcripción al backend para la respuesta  ***
-        */
+         *** Enviar la transcripción al backend para la respuesta  ***
+         */
         // const chatResponse = await fetch("/api/chat", {
         //   method: "POST",
         //   body: JSON.stringify({ prompt: transcription }),
@@ -79,17 +79,24 @@ export default function MainContent({
         // console.log("Chat: ", chatResponse);
 
         /*
-          *** Enviar la respuesta al backend para obtener el audio ***
-        */
+         *** Enviar la respuesta al backend para obtener el audio ***
+         */
         const audioResponse = await fetch("/api/text-to-speech", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: 'Hello! How can I assist you today? Would you like to practice speaking in English?' }),
-        }).then((res) => res.json());
+          body: JSON.stringify({
+            text: "Hello! How can I assist you today? Would you like to practice speaking in English?",
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => data.url);
 
-        // playAudio(audioResponse.audioContent);
+        console.log(audioResponse);
+
+        const audioIA = new Audio(audioResponse)
+        audioIA.play()
 
         // Limpiar los chunks para la próxima grabación
         audioChunksRef.current = [];
@@ -103,15 +110,6 @@ export default function MainContent({
         .forEach((track) => track.stop());
       setRecording(false);
     }
-  };
-
-  const playAudio = (audioContent) => {
-    const audioBlob = new Blob([new Uint8Array(audioContent)], {
-      type: "audio/mp3",
-    });
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    audio.play();
   };
 
   return (
