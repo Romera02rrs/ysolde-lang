@@ -36,8 +36,8 @@ export default function MainContent({
         };
 
         mediaRecorder.start();
-        setRecording(true); // Cambiar el estado a grabando solo después de que se haya iniciado la grabación
-
+        setRecording(true);
+        alert(recording)
         console.log("Recording");
       } catch (error) {
         console.error("Error accessing microphone:", error);
@@ -132,7 +132,6 @@ export default function MainContent({
           } flex items-center justify-center transition-transform ${
             recording ? "animate-wiggle" : "hover:scale-105"
           } shadow-md`}
-          onTouchStart={handleAudio}
           onClick={handleAudio}
         >
           <MicIcon
