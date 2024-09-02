@@ -29,10 +29,10 @@ export async function POST(request) {
 
     // Convertir la respuesta a un Buffer y escribir el archivo en el sistema de archivos
     const buffer = Buffer.from(await mp3.arrayBuffer());
-    await fs.promises.writeFile(speechFile, buffer);
+    //await fs.promises.writeFile(speechFile, buffer);
 
     // Devolver la URL del archivo de audio generado
-    return NextResponse.json({ url: fileName });
+    return NextResponse.json({ dataBuffer: buffer });
   } catch (error) {
     console.error('Error in text-to-speech:', error);
     return NextResponse.json({ error: 'Error in text-to-speech' }, { status: 500 });

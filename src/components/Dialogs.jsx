@@ -1,10 +1,26 @@
+"use client";
+
 // components/Dialog.jsx
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import terms from "../content/legalterms";
 import { LanguageDropdown } from "./LanguageDropdown";
+import { useState } from "react";
 
 export default function Dialogs({
   isTopicModalOpen,
@@ -16,8 +32,71 @@ export default function Dialogs({
   isLoginModalOpen,
   setIsLoginModalOpen,
   isDarkMode,
-  setLanguage
+  setLanguage,
 }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleEmailChange = (e) => setEmail(e.target.value);
+  const handlePasswordChange = (e) => setPassword(e.target.value);
+
+  const handleRegister = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        console.log("User registered:", data.message);
+        alert("Registration successful. You can now log in.");
+      } else {
+        console.error("Error registering user:", data.error);
+        alert(`Registration failed: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        console.log("Login successful:", data.message);
+        localStorage.setItem("token", data.token); // Guardar el token en el localStorage
+        alert("Login successful");
+        setIsLoginModalOpen(false); // Cerrar el modal después de iniciar sesión
+      } else {
+        console.error("Error logging in:", data.error);
+        alert(`Login failed: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       {/* Topic Selection Dialog */}
@@ -76,7 +155,10 @@ export default function Dialogs({
           <div className="space-y-2">
             <h3 className="text-md font-medium">Contact</h3>
             <DialogDescription>
-              <a href="mailto:contacto@rubenromera.com" className="text-blue-600 underline">
+              <a
+                href="mailto:contacto@rubenromera.com"
+                className="text-blue-600 underline"
+              >
                 contacto@rubenromera.com
               </a>
             </DialogDescription>
@@ -85,7 +167,7 @@ export default function Dialogs({
           <div className="space-y-2">
             <h3 className="text-md font-medium">Language</h3>
             <DialogDescription>
-              <LanguageDropdown setLanguage={setLanguage}/>
+              <LanguageDropdown setLanguage={setLanguage} />
             </DialogDescription>
           </div>
 
@@ -188,6 +270,8 @@ export default function Dialogs({
             <Input
               type="email"
               placeholder="Email"
+              value={email}
+              onChange={handleEmailChange}
               className={`w-full ${
                 isDarkMode
                   ? "bg-gray-800 text-gray-300 focus:bg-gray-700 focus:text-gray-200"
@@ -197,6 +281,8 @@ export default function Dialogs({
             <Input
               type="password"
               placeholder="Password"
+              value={password}
+              onChange={handlePasswordChange}
               className={`w-full ${
                 isDarkMode
                   ? "bg-gray-800 text-gray-300 focus:bg-gray-700 focus:text-gray-200"
@@ -206,23 +292,27 @@ export default function Dialogs({
             <div className="flex justify-between items-center">
               <Button
                 variant="outline"
+                onClick={handleLogin}
+                disabled={isLoading}
                 className={`${
                   isDarkMode
                     ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
                     : "bg-white text-[#0077b6] hover:bg-gray-200"
                 }`}
               >
-                Log In
+                {isLoading ? "Logging In..." : "Log In"}
               </Button>
               <Button
                 variant="outline"
+                onClick={handleRegister}
+                disabled={isLoading}
                 className={`${
                   isDarkMode
                     ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
                     : "bg-white text-[#0077b6] hover:bg-gray-200"
                 }`}
               >
-                Register
+                {isLoading ? "Registering..." : "Register"}
               </Button>
             </div>
           </div>

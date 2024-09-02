@@ -73,25 +73,25 @@ export default function MainContent({
 
         console.log("Chat: ", chatResponse);
 
+        //TODO: fix jwt token
+
+        const token = localStorage.getItem("token");
+
         /*
          *** Get the string response and speak with AI ***
          */
-        const audioResponse = await fetch("/api/text-to-speech", {
+        const saveConversationResponse = await fetch("api/saveConversation", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            text: chatResponse,
-          }),
+          body: JSON.stringify({ text: chatResponse, token: token }),
         })
           .then((res) => res.json())
-          .then((data) => data.url);
 
-        console.log(audioResponse);
+        // Obtener la URL del audio desde la respuesta
+        const audioUrl = saveConversationResponse.audioUrl;
 
-        const audioIA = new Audio(audioResponse)
-        audioIA.play()
+        // Reproducir el audio
+        const audioIA = new Audio(audioUrl);
+        audioIA.play();
 
         // Limpiar los chunks para la próxima grabación
         audioChunksRef.current = [];

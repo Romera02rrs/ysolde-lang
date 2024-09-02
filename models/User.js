@@ -23,19 +23,6 @@ const UserSchema = new mongoose.Schema({
   ],
 });
 
-usuarioSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
-  } else {
-    const salt = await bcrypt.genSalt(10);
-    this.password = bcrypt.hash(this.password, salt);
-  }
-});
-
-usuarioSchema.methods.comparePasswords = async function (formPassword) {
-  return await bcrypt.compare(formPassword, this.password);
-};
-
 const User = mongoose.models.User || mongoose.model("User", UserSchema);
 
 export default User;
