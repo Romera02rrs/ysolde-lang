@@ -1,6 +1,6 @@
 import { Button } from "../components/ui/button";
 import MicIcon from "./icons/MicIcon";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function MainContent({
   isDarkMode,
@@ -11,12 +11,33 @@ export default function MainContent({
   const [permissionsGranted, setPermissionsGranted] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const [isMobileOrSmallScreen, setIsMobileOrSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const checkDevice = () => {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const isSmallScreen = window.innerWidth < 768;
+      setIsMobileOrSmallScreen(isMobile || isSmallScreen);
+    };
+
+    // Verificar al montar el componente
+    checkDevice();
+
+    // Verificar al cambiar el tamaño de la ventana
+    window.addEventListener('resize', checkDevice);
+
+    // Limpiar el listener cuando el componente se desmonte
+    return () => {
+      window.removeEventListener('resize', checkDevice);
+    };
+  }, []);
 
   const requestMicPermission = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((track) => track.stop());
       setPermissionsGranted(true);
+      console.log("Permissions granted:", true);
     } catch (error) {
       console.error("Error accessing microphone:", error);
       alert("Microphone access denied.");
@@ -123,8 +144,8 @@ export default function MainContent({
           } flex items-center justify-center transition-transform ${
             recording ? "animate-wiggle" : "hover:scale-105"
           } shadow-md`}
-          onClick={permissionsGranted ? handleAudio : null}
-          onTouchStart={permissionsGranted ? handleAudio : null}
+          onClick={!isMobileOrSmallScreen && permissionsGranted ? handleAudio : null}
+          onTouchStart={isMobileOrSmallScreen && permissionsGranted ? handleAudio : null}
           disabled={!permissionsGranted}
         >
           <MicIcon
