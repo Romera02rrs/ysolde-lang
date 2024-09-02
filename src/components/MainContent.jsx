@@ -19,36 +19,43 @@ export default function MainContent({
     }
 
     if (!recording) {
+      alert('recording')
       try {
         // Solicitar permiso para usar el micrófono
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
 
+      alert('2')
         // Solo si se obtiene el permiso, inicia la grabación
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType: "audio/webm",
         }); // Configurar el tipo MIME deseado
-        mediaRecorderRef.current = mediaRecorder;
+      alert('3')
+      mediaRecorderRef.current = mediaRecorder;
 
+      alert('4')
         mediaRecorder.ondataavailable = (event) => {
           audioChunksRef.current.push(event.data);
         };
 
-        mediaRecorder.start();
+      alert('5')
+      mediaRecorder.start();
         setRecording(true);
-        alert(recording)
         console.log("Recording");
       } catch (error) {
+      alert('6')
         console.error("Error accessing microphone:", error);
       }
     } else {
+      alert('7')
       mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/webm",
         });
 
-        const formData = new FormData();
+      alert('8')
+      const formData = new FormData();
         formData.append("file", audioBlob, "audio.webm");
 
         /*
@@ -98,6 +105,7 @@ export default function MainContent({
         audioChunksRef.current = [];
       };
 
+      alert('9')
       // Detener la grabación
       console.log("Stop recording");
       mediaRecorderRef.current.stop();
