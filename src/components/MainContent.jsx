@@ -1,4 +1,3 @@
-// components/MainContent.js
 import { Button } from "../components/ui/button";
 import MicIcon from "./icons/MicIcon";
 import { useState, useRef } from "react";
@@ -9,8 +8,20 @@ export default function MainContent({
   handleModalToggle,
 }) {
   const [recording, setRecording] = useState(false);
+  const [permissionsGranted, setPermissionsGranted] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+
+  const requestMicPermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((track) => track.stop());
+      setPermissionsGranted(true);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      alert("Microphone access denied.");
+    }
+  };
 
   const handleAudio = async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -19,16 +30,15 @@ export default function MainContent({
     }
 
     if (!recording) {
+      console.log("Recording");
+
       try {
-        // Solicitar permiso para usar el micrófono
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
-
-        // Solo si se obtiene el permiso, inicia la grabación
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType: "audio/webm",
-        }); // Configurar el tipo MIME deseado
+        });
         mediaRecorderRef.current = mediaRecorder;
 
         mediaRecorder.ondataavailable = (event) => {
@@ -36,9 +46,7 @@ export default function MainContent({
         };
 
         mediaRecorder.start();
-        setRecording(true);  // Cambiar el estado a grabando solo después de que se haya iniciado la grabación
-
-        console.log("Recording");
+        setRecording(true);
       } catch (error) {
         console.error("Error accessing microphone:", error);
       }
@@ -51,21 +59,13 @@ export default function MainContent({
         const formData = new FormData();
         formData.append("file", audioBlob, "audio.webm");
 
-        /*
-         *** Get the client voice and send it to whisper: Return a string  ***
-         */
         const transcription = await fetch("/api/speech-to-text", {
           method: "POST",
-          body: formData, // Enviar el FormData en lugar de JSON
+          body: formData,
         })
           .then((res) => res.json())
           .then((data) => data.transcription);
 
-        // console.log('Transcription: ', transcription);
-
-        /*
-         *** Get the user string and make a response  ***
-         */
         const chatResponse = await fetch("/api/chat", {
           method: "POST",
           body: JSON.stringify({ prompt: transcription }),
@@ -75,38 +75,27 @@ export default function MainContent({
 
         console.log("Chat: ", chatResponse);
 
-        //TODO: fix jwt token
-
         const token = localStorage.getItem("token");
 
-        /*
-         *** Get the string response and speak with AI ***
-         */
         const saveConversationResponse = await fetch("api/saveConversation", {
           method: "POST",
           body: JSON.stringify({ text: chatResponse, token: token }),
-        })
-          .then((res) => res.json());
+        }).then((res) => res.json());
 
-        // Obtener la URL del audio desde la respuesta
         const audioUrl = saveConversationResponse.audioUrl;
 
-        // Reproducir el audio
         const audioIA = new Audio(audioUrl);
         audioIA.play();
 
-        // Limpiar los chunks para la próxima grabación
         audioChunksRef.current = [];
-        setRecording(false)
       };
-      // Detener la grabación
+
       console.log("Stop recording");
-      // El micro no se detiene
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream
         .getTracks()
         .forEach((track) => track.stop());
-      setRecording(false);  // Cambiar el estado de grabación a false
+      setRecording(false);
     }
   };
 
@@ -134,7 +123,8 @@ export default function MainContent({
           } flex items-center justify-center transition-transform ${
             recording ? "animate-wiggle" : "hover:scale-105"
           } shadow-md`}
-          onClick={handleAudio}
+          onClick={permissionsGranted ? handleAudio : null}
+          disabled={!permissionsGranted}
         >
           <MicIcon
             className={`w-16 h-16 ${
@@ -151,6 +141,19 @@ export default function MainContent({
         Speak to your English Practice AI
       </p>
       <div className="flex flex-col justify-center gap-4 mt-8 w-full sm:flex-row">
+        <Button
+          variant="outline"
+          onClick={requestMicPermission}
+          className={`${
+            permissionsGranted
+              ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+              : isDarkMode
+              ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              : "bg-white text-[#0077b6] hover:bg-gray-200"
+          } mb-4`}
+        >
+          {permissionsGranted ? "Permissions Granted" : "Request Microphone Access"}
+        </Button>
         <Button
           variant="outline"
           onClick={handleConversationPanelToggle}
