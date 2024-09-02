@@ -124,6 +124,7 @@ export default function MainContent({
             recording ? "animate-wiggle" : "hover:scale-105"
           } shadow-md`}
           onClick={permissionsGranted ? handleAudio : null}
+          onTouchStart={permissionsGranted ? handleAudio : null}
           disabled={!permissionsGranted}
         >
           <MicIcon
@@ -152,7 +153,9 @@ export default function MainContent({
               : "bg-white text-[#0077b6] hover:bg-gray-200"
           } mb-4`}
         >
-          {permissionsGranted ? "Permissions Granted" : "Request Microphone Access"}
+          {permissionsGranted
+            ? "Permissions Granted"
+            : "Request Microphone Access"}
         </Button>
         <Button
           variant="outline"

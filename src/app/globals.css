@@ -67,3 +67,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media (max-width: 768px) {
+  .hover\:scale-105:hover {
+    transform: none !important;
+  }
+}
