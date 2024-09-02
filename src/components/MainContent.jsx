@@ -97,6 +97,7 @@ export default function MainContent({
 
         // Limpiar los chunks para la próxima grabación
         audioChunksRef.current = [];
+        setRecording(false)
       };
       // Detener la grabación
       console.log("Stop recording");
