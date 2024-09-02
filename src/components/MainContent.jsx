@@ -27,6 +27,7 @@ export default function MainContent({
         });
 
       alert('2')
+      //TODO: peta
         // Solo si se obtiene el permiso, inicia la grabación
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType: "audio/webm",
@@ -44,7 +45,7 @@ export default function MainContent({
         setRecording(true);
         console.log("Recording");
       } catch (error) {
-      alert('6')
+      alert('6: ', error)
         console.error("Error accessing microphone:", error);
       }
     } else {
