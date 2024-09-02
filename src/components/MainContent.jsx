@@ -19,13 +19,13 @@ export default function MainContent({
     }
 
     if (!recording) {
-      // Iniciar la grabación
-      console.log("grabando");
-
       try {
+        // Solicitar permiso para usar el micrófono
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
+
+        // Solo si se obtiene el permiso, inicia la grabación
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType: "audio/webm",
         }); // Configurar el tipo MIME deseado
@@ -36,7 +36,9 @@ export default function MainContent({
         };
 
         mediaRecorder.start();
-        setRecording(true);
+        setRecording(true);  // Cambiar el estado a grabando solo después de que se haya iniciado la grabación
+
+        console.log("Recording");
       } catch (error) {
         console.error("Error accessing microphone:", error);
       }
@@ -50,7 +52,7 @@ export default function MainContent({
         formData.append("file", audioBlob, "audio.webm");
 
         /*
-         *** Get te client voice and send it to whipser: Return a string  ***
+         *** Get the client voice and send it to whisper: Return a string  ***
          */
         const transcription = await fetch("/api/speech-to-text", {
           method: "POST",
@@ -84,7 +86,7 @@ export default function MainContent({
           method: "POST",
           body: JSON.stringify({ text: chatResponse, token: token }),
         })
-          .then((res) => res.json())
+          .then((res) => res.json());
 
         // Obtener la URL del audio desde la respuesta
         const audioUrl = saveConversationResponse.audioUrl;
@@ -97,13 +99,13 @@ export default function MainContent({
         audioChunksRef.current = [];
       };
       // Detener la grabación
-      console.log("deteniendo");
+      console.log("Stop recording");
       // El micro no se detiene
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream
         .getTracks()
         .forEach((track) => track.stop());
-      setRecording(false);
+      setRecording(false);  // Cambiar el estado de grabación a false
     }
   };
 
@@ -136,7 +138,7 @@ export default function MainContent({
           <MicIcon
             className={`w-16 h-16 ${
               isDarkMode ? "text-gray-300" : "text-[#0077b6]"
-            } ${recording ? "animate-shake" : ""}`}
+            } ${recording ? "animate-shake animate-spin" : ""}`}
           />
         </button>
       </div>
