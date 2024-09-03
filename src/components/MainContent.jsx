@@ -19,44 +19,50 @@ export default function MainContent({
     }
 
     if (!recording) {
-      alert('recording')
+      alert("recording");
       try {
         // Solicitar permiso para usar el micrófono
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
 
-      alert('2')
-      //TODO: peta
+        alert("2");
+        //TODO: peta
         // Solo si se obtiene el permiso, inicia la grabación
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType: "audio/webm",
         }); // Configurar el tipo MIME deseado
-      alert('3')
-      mediaRecorderRef.current = mediaRecorder;
+        alert("3");
+        mediaRecorderRef.current = mediaRecorder;
 
-      alert('4')
+        alert("4");
         mediaRecorder.ondataavailable = (event) => {
           audioChunksRef.current.push(event.data);
         };
 
-      alert('5')
-      mediaRecorder.start();
+        alert("5");
+        mediaRecorder.start();
         setRecording(true);
         console.log("Recording");
       } catch (error) {
-      alert('6: ', error)
-        console.error("Error accessing microphone:", error);
+        audioChunksRef.current = [];
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current.stream
+          .getTracks()
+          .forEach((track) => track.stop());
+        setRecording(false);
+        console.error("Error during processing:", error);
+        alert(`Error during processing: ${error.message || error.name}`);
       }
     } else {
-      alert('7')
+      alert("7");
       mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/webm",
         });
 
-      alert('8')
-      const formData = new FormData();
+        alert("8");
+        const formData = new FormData();
         formData.append("file", audioBlob, "audio.webm");
 
         /*
@@ -106,7 +112,7 @@ export default function MainContent({
         audioChunksRef.current = [];
       };
 
-      alert('9')
+      alert("9");
       // Detener la grabación
       console.log("Stop recording");
       mediaRecorderRef.current.stop();
